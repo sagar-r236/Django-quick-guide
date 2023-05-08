@@ -1,0 +1,18 @@
+-----------------
+Forms
+------------------
+Django 'Form' class is used to specify the fields in the form, their layout, display widgets, initial values,
+
+Delaring a form
+-----------------
+The declaration syntax for a form is simialar to declaring a Model.
+
+from django import forms
+
+
+class StudentInfoForm(forms.Form):
+    name = forms.CharField(help_text="Enter your name")
+
+
+after you create a class what you have to do is create a object of form class which you have created and then pass
+it to the context variable then the form will be retrived!
