@@ -1,0 +1,8 @@
+Q : q objects are used to write a complex queries, particuallarly used to filter
+
+eg: YourModel.objects.filter(Q(some_field__gt = 5) & Q(some_field__lt = 20))
+
+F : f expression is used to reference the object fields while writing queries. while updating a values for a particular field this will become useful
+
+eg: Yourmodel.objects.filter(id=1).update(age = f('age') + 1) # this will increase the age my 1 in the age of that particuallar filtered object.
+
