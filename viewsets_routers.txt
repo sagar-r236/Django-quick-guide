@@ -1,0 +1,25 @@
+Viewsets are the easier way to create views, in api view we use to write seperately get, post method and write a the code corresponding to it. Using viewsets we can just define the model and serializer 
+and all the http methods are defined by itself.
+
+eg :
+
+from rest_framework import viewsets
+class MyViewSet(viewsets.ModelViewSet):
+  queryset = MyModel.objects.all()
+  serializer_class = SomeSerializerClass
+
+for the endpoints for viewsets we use router. instead of creating an end point for all the http method we register router and for the all the http method endpoints will be generated.
+
+eg : 
+# for the above viewset lets create a router
+
+from rest_framework import routers
+
+router = routers.DefaultRouter()
+
+router.register('yourview/', MyViewSet) #you have register your view to router, next step is register this router in the urlpatterns
+
+urlpatterns = [
+  path('api/', include(router.urls)),
+  ] #that's it! your endpoint for the view will be api/yourview/
+  
