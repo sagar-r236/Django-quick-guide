@@ -1,0 +1,7 @@
+Python Request library
+
+suppose you are sending the data using python request library, let's say
+
+request.json(endpoint, json={'hello': 'world'}) #suppose if you send like this you can access the data as request.data
+
+request.json(endpoint, data={'hello': 'world'}) #suppose if you send like this you can access the data as request.form
