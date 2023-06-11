@@ -2,6 +2,140 @@ Python Request library
 
 suppose you are sending the data using python request library, let's say
 
-request.json(endpoint, json={'hello': 'world'}) #suppose if you send like this you can access the data as request.data
+request.get(endpoint, json={'hello': 'world'}) 
 
-request.json(endpoint, data={'hello': 'world'}) #suppose if you send like this you can access the data as request.form
+json.loads()
+while accessing the data in the server, we can access using request.body, what we recieve is a byte string of json, so in order to convert
+and to actual python dict we use json library and using json.loads(data), json.loads() converts to a byte strint to python dict.
+
+json.dumps()
+converts a dictionary into json.
+
+request.GET is used to access the query parameters, request.get(endpoint, params={'name':'sagar'}), in the params you send the query
+parameters
+
+Fetching random object
+---------------------
+in order to fetch a random object from the databases, you can do MyModel.objects.all().order_by(?).first()
+
+
+In-built method to convert model to a dict 
+-----------------------------------------
+in order to convert model to dict, we have a in built method.
+
+eg: from django.form.models import model_to_dict
+    obj = MyModel.objects.all().first()
+    dic = model_to_dict(obj, fields=['id', 'title']) #this will convert the model object to dictionary, use fields attribute to send only the required field
+
+REST framework view and responses
+---------------------------------
+api view: this decorator will turn your function into a django api view
+
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+@api_view(['GET', 'POST'])
+def home(request):
+    data = {'message':'hello'}
+    return Response(data)
+
+using model_to_dict, suppose if we have any internal property method in models, and if we want that to be in the response, we can't do it using model_to_dict 
+therfore we have to use serializer.
+
+Steps to create a basic serializer.
+----------------------------------
+
+step 1 : define a class which inherits the ModelSerializer from rest_framework serializer
+step 2 : inside the class Meta of the defined class, define the model and field which you want in the response
+step 3 : in your view create a instance/object of the serializer class which you have created and send the model instance which you want to serialize.
+step 4 : using the object of the serializer class, the data property of it will give the serialized data.
+
+Adding extra field which is not there in model
+----------------------------------------------
+Suppose if you have an extra field which is not there in the model.
+
+let's say your model looks like this:
+
+class Product(models.Model):
+    title = models.CharField(max_length=120)
+    content = models.TextField(blank=True, null=True)
+    price = models.DecimalField(max_digits=15, decimal_places=2, default=99.99)
+
+
+in order to have one more extra field in the response, you can do it in serializer class itself, using SerializerMethodField, basic is 
+you create a object of SerializerMethodField inside the serializer class, and define a method prefixed with get_, and write the logic in
+that method that's it you have your own field.
+
+eg: 
+
+class ProductSerializer(serializers.ModelSerializer):
+    
+    sale_price = serializers.SerializerMethodField() #sale price is not there in model
+    
+    class Meta:
+        model = Product
+        fields = [
+            'id',
+            'title',
+            'content',
+            'price',
+            'sale_price'
+        ]
+        
+    def get_sale_price(self, obj):
+        return "%.2f" % (float(obj.price) * 0.8)
+
+#code below is not important 
+
+
+@api_view(['GET', 'POST'])
+def api_home(request, *args, **kwargs):
+    
+    
+    
+    instance = Product.objects.all().order_by("?").first()
+    data = {}
+    if instance:
+        data = ProductSerializer(instance).data
+    else:
+        return Response({'message': 'No product available'})
+        
+    
+    return Response(data)
+
+Using serializer for validation of data.
+----------------------------------------
+Serialzier not only serializes the data, but also can be used to validate the data.
+
+eg : 
+@api_view(['GET', 'POST'])
+def api_home(request, *args, **kwargs):
+    
+    
+    print(request.data)
+    serializer = ProductSerializer(data=request.data)
+    if serializer.is_valid(): 
+        print(serializer.data)
+        # instance = serializer.save()
+        return Response(serializer.data)
+
+Note : after creating the instance using serializer.save() the serializer.data returns all the fields of the model, 
+----   but if don't use serializer.save() then serializer.data only the field which we have sent why is this
+
+------------------------------------------------------------------------------------------------------------
+
+Generics view
+-------------
+
+RetrieveAPIView
+
+in order to have a detail view, we use RetrieveAPIView
+import this class from rest_framework.generics
+
+
+eg : class ModelDetailView(RetrieveAPIView):
+        queryset = Model.objects.all()
+        serializer_class = YourSerializerClassForTheModel
+
+that's it, detial api view is ready, in the url you have to have the primary key of the object based on it, it will send the
+required data.
