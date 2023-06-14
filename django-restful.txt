@@ -139,3 +139,79 @@ eg : class ModelDetailView(RetrieveAPIView):
 
 that's it, detial api view is ready, in the url you have to have the primary key of the object based on it, it will send the
 required data.
+
+
+CreateAPIView
+
+in order to have a create view, we use CreateAPIView
+import this class from rest_framework.generics
+
+eg: class ProductDetailAPIView(generics.RetrieveAPIView):
+        queryset = Product.objects.all()
+        serializer_class = ProductSerializer
+
+
+suppose if you have to write you own logic, for perfoming the create operation, you can overide perform_create() method, that takes an 
+arguemnt called serializer, serializer is passed to this method once the validation is done. You can access the validated data and use
+it customise your create view.
+
+
+eg : 
+
+class ProductCreateView(generics.CreateAPIView):
+    
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    
+    def perform_create(self, serializer):
+        title = serializer.validated_data.get('title', None)
+        content = serializer.validated_data.get('content', None)
+        if content is None:
+            content = title
+            
+        serializer.save(content=content)
+        return Response({"message" : "nothing i\'m learning"}, status=204)
+
+ListAPI view
+ 
+instead of CreateAPIView class, we can inherit CreateListAPIView for both listing and creatign
+
+class ProductListCreateView(generics.CreateListAPIView):
+    
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    
+    def perform_create(self, serializer):
+        title = serializer.validated_data.get('title', None)
+        content = serializer.validated_data.get('content', None)
+        if content is None:
+            content = title
+            
+        serializer.save(content=content)
+        return Response({"message" : "nothing i\'m learning"}, status=204)
+
+
+UpdateAPIView and DestroyAPIView
+
+For update to overide the inbuilt method use perform_update(self, serializer)
+
+eg : 
+class ProductUpdateAPIView(generics.UpdateAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    lookup_field = 'pk' #lookup field just chekcs which fields to check in a table
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        instance.title = "changed title"
+        # instance.save()
+
+Delete 
+
+eg: 
+
+class ProductDeleteAPIView(generics.DestroyAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    
+    def perform_destroy(self, instance):
+       return super().perform_destroy(instance)
